@@ -1,0 +1,195 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import AppLogo from '@/components/ui/AppLogo';
+import {
+  LayoutDashboard,
+  Upload,
+  TrendingUp,
+  Settings2,
+  FileBarChart,
+  Database,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  HelpCircle,
+  LogOut,
+  User,
+} from 'lucide-react';
+import Icon from '@/components/ui/AppIcon';
+
+
+interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  badge?: number;
+  badgeVariant?: 'primary' | 'warning' | 'negative';
+}
+
+const navItems: NavItem[] = [
+  { id: 'nav-dashboard', label: 'Forecasting Dashboard', href: '/', icon: LayoutDashboard },
+  { id: 'nav-upload', label: 'Data Upload', href: '/data-upload', icon: Upload, badge: 2, badgeVariant: 'warning' },
+  { id: 'nav-analysis', label: 'Forecast Analysis', href: '/forecast-analysis', icon: TrendingUp },
+  { id: 'nav-config', label: 'Forecast Configuration', href: '/forecast-configuration', icon: Settings2 },
+  { id: 'nav-reports', label: 'Reports & Export', href: '/reports-export', icon: FileBarChart },
+  { id: 'nav-data', label: 'Data Management', href: '/data-management', icon: Database, badge: 3, badgeVariant: 'negative' },
+];
+
+interface SidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
+
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const pathname = usePathname();
+
+  return (
+    <aside
+      className={`sidebar-transition flex flex-col h-full relative z-30 ${
+        collapsed ? 'w-16' : 'w-60'
+      }`}
+      style={{ background: 'var(--card)', borderRight: '1px solid var(--border)' }}
+    >
+      {/* Logo */}
+      <div className={`flex items-center h-16 px-3 border-b ${collapsed ? 'justify-center' : 'gap-3'}`}
+        style={{ borderColor: 'var(--border)' }}>
+        <AppLogo size={32} />
+        {!collapsed && (
+          <span className="font-semibold text-base text-foreground tracking-tight">
+            SalesForecast
+          </span>
+        )}
+      </div>
+
+      {/* Nav Items */}
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {!collapsed && (
+          <p className="px-3 mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Analytics
+          </p>
+        )}
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href;
+
+          if (collapsed) {
+            return (
+              <div key={item.id} className="tooltip-wrapper">
+                <Link
+                  href={item.href}
+                  className={`nav-item justify-center px-0 w-full h-10 ${isActive ? 'active' : ''}`}
+                >
+                  <Icon size={20} />
+                  {item.badge && (
+                    <span
+                      className="absolute top-1 right-1 w-2 h-2 rounded-full"
+                      style={{
+                        background: item.badgeVariant === 'negative' ? 'var(--negative)' :
+                          item.badgeVariant === 'warning' ? 'var(--warning)' : 'var(--primary)',
+                      }}
+                    />
+                  )}
+                </Link>
+                <span className="tooltip-label top-1/2 -translate-y-1/2">{item.label}</span>
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={18} className="shrink-0" />
+              <span className="flex-1 truncate">{item.label}</span>
+              {item.badge && (
+                <span
+                  className="text-xs font-semibold px-1.5 py-0.5 rounded-full tabular-nums"
+                  style={{
+                    background: item.badgeVariant === 'negative' ? 'var(--negative-bg)' :
+                      item.badgeVariant === 'warning' ? 'var(--warning-bg)' : 'var(--info-bg)',
+                    color: item.badgeVariant === 'negative' ? 'var(--negative)' :
+                      item.badgeVariant === 'warning' ? 'var(--warning)' : 'var(--primary)',
+                  }}
+                >
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Actions */}
+      <div className="px-2 py-3 border-t space-y-0.5" style={{ borderColor: 'var(--border)' }}>
+        {collapsed ? (
+          <>
+            <div className="tooltip-wrapper">
+              <button className="nav-item justify-center px-0 w-full h-10">
+                <Bell size={18} />
+              </button>
+              <span className="tooltip-label top-1/2 -translate-y-1/2">Notifications</span>
+            </div>
+            <div className="tooltip-wrapper">
+              <button className="nav-item justify-center px-0 w-full h-10">
+                <HelpCircle size={18} />
+              </button>
+              <span className="tooltip-label top-1/2 -translate-y-1/2">Help</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <button className="nav-item w-full">
+              <Bell size={18} />
+              <span className="flex-1 text-left">Notifications</span>
+              <span className="badge-warning text-xs px-1.5 py-0.5 rounded-full" style={{background:'var(--warning-bg)',color:'var(--warning)'}}>4</span>
+            </button>
+            <button className="nav-item w-full">
+              <HelpCircle size={18} />
+              <span>Help & Docs</span>
+            </button>
+          </>
+        )}
+
+        {/* User */}
+        <div className={`flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg ${collapsed ? 'justify-center' : ''}`}
+          style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '12px' }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold text-primary-foreground"
+            style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)' }}>
+            MR
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">Manas Verma</p>
+              <p className="text-xs text-muted-foreground truncate">Sales Ops Manager</p>
+            </div>
+          )}
+          {!collapsed && (
+            <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <LogOut size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Collapse Toggle */}
+      <button
+        onClick={onToggle}
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-110 z-40"
+        style={{
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
+          color: 'var(--muted-foreground)',
+        }}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </button>
+    </aside>
+  );
+}
