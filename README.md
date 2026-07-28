@@ -23,7 +23,7 @@ A modern Next.js 15 application built with TypeScript and Tailwind CSS.
   # or
   yarn dev
   ```
-3. Open [http://localhost:4028](http://localhost:4028) with your browser to see the result.
+3. Open (https://salesforecast-0jbd654.public.builtwithrocket.new/) with your browser to see the result.
 
 ## 📁 Project Structure
 
