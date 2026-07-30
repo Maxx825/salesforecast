@@ -13,10 +13,8 @@ import {
   Database,
   ChevronLeft,
   ChevronRight,
-  Bell,
   HelpCircle,
   LogOut,
-  User,
   Users,
   UserCog,
 } from 'lucide-react';
@@ -34,11 +32,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'nav-dashboard', label: 'Forecasting Dashboard', href: '/', icon: LayoutDashboard },
-  { id: 'nav-upload', label: 'Data Upload', href: '/data-upload', icon: Upload, badge: 2, badgeVariant: 'warning' },
+  { id: 'nav-upload', label: 'Data Upload', href: '/data-upload', icon: Upload },
   { id: 'nav-analysis', label: 'Forecast Analysis', href: '/forecast-analysis', icon: TrendingUp },
   { id: 'nav-config', label: 'Forecast Configuration', href: '/forecast-configuration', icon: Settings2 },
   { id: 'nav-reports', label: 'Reports & Export', href: '/reports-export', icon: FileBarChart },
-  { id: 'nav-data', label: 'Data Management', href: '/data-management', icon: Database, badge: 3, badgeVariant: 'negative' },
+  { id: 'nav-data', label: 'Data Management', href: '/data-management', icon: Database },
   { id: 'nav-workspace', label: 'Workspace Admin', href: '/workspace-admin', icon: Users },
   { id: 'nav-settings', label: 'User Settings', href: '/user-settings', icon: UserCog },
 ];
@@ -88,15 +86,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   className={`nav-item justify-center px-0 w-full h-10 ${isActive ? 'active' : ''}`}
                 >
                   <Icon size={20} />
-                  {item.badge && (
-                    <span
-                      className="absolute top-1 right-1 w-2 h-2 rounded-full"
-                      style={{
-                        background: item.badgeVariant === 'negative' ? 'var(--negative)' :
-                          item.badgeVariant === 'warning' ? 'var(--warning)' : 'var(--primary)',
-                      }}
-                    />
-                  )}
                 </Link>
                 <span className="tooltip-label top-1/2 -translate-y-1/2">{item.label}</span>
               </div>
@@ -111,19 +100,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             >
               <Icon size={18} className="shrink-0" />
               <span className="flex-1 truncate">{item.label}</span>
-              {item.badge && (
-                <span
-                  className="text-xs font-semibold px-1.5 py-0.5 rounded-full tabular-nums"
-                  style={{
-                    background: item.badgeVariant === 'negative' ? 'var(--negative-bg)' :
-                      item.badgeVariant === 'warning' ? 'var(--warning-bg)' : 'var(--info-bg)',
-                    color: item.badgeVariant === 'negative' ? 'var(--negative)' :
-                      item.badgeVariant === 'warning' ? 'var(--warning)' : 'var(--primary)',
-                  }}
-                >
-                  {item.badge}
-                </span>
-              )}
             </Link>
           );
         })}
@@ -134,29 +110,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {collapsed ? (
           <>
             <div className="tooltip-wrapper">
-              <button className="nav-item justify-center px-0 w-full h-10">
-                <Bell size={18} />
-              </button>
-              <span className="tooltip-label top-1/2 -translate-y-1/2">Notifications</span>
-            </div>
-            <div className="tooltip-wrapper">
-              <button className="nav-item justify-center px-0 w-full h-10">
+              <Link href="/help-docs" className="nav-item justify-center px-0 w-full h-10">
                 <HelpCircle size={18} />
-              </button>
-              <span className="tooltip-label top-1/2 -translate-y-1/2">Help</span>
+              </Link>
+              <span className="tooltip-label top-1/2 -translate-y-1/2">Help & Docs</span>
             </div>
           </>
         ) : (
           <>
-            <button className="nav-item w-full">
-              <Bell size={18} />
-              <span className="flex-1 text-left">Notifications</span>
-              <span className="badge-warning text-xs px-1.5 py-0.5 rounded-full" style={{background:'var(--warning-bg)',color:'var(--warning)'}}>4</span>
-            </button>
-            <button className="nav-item w-full">
+            <Link href="/help-docs" className="nav-item w-full">
               <HelpCircle size={18} />
               <span>Help & Docs</span>
-            </button>
+            </Link>
           </>
         )}
 
