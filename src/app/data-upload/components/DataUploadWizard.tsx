@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Upload, CheckCircle2, ChevronRight, AlertCircle, FileText, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNotifications } from '@/contexts/NotificationContext';
 import DataPreviewTable from './DataPreviewTable';
 import ColumnMapper from './ColumnMapper';
 import ValidationErrors from './ValidationErrors';
@@ -22,6 +23,7 @@ export default function DataUploadWizard() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addNotification } = useNotifications();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -39,6 +41,12 @@ export default function DataUploadWizard() {
     const ext = name.split('.').pop()?.toLowerCase();
     if (!['csv', 'xlsx', 'xls'].includes(ext || '')) {
       toast.error('Unsupported format — only CSV, XLSX, and XLS files are accepted');
+      addNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: `"${name}" is not a supported format. Please upload a CSV, XLSX, or XLS file.`,
+        href: '/data-upload',
+      });
       return;
     }
     setIsProcessing(true);
@@ -51,6 +59,12 @@ export default function DataUploadWizard() {
       });
       setIsProcessing(false);
       setStep('validate');
+      addNotification({
+        type: 'info',
+        title: 'File Parsed',
+        message: `"${name}" parsed successfully — 14,832 rows detected. Review column mapping before importing.`,
+        href: '/data-upload',
+      });
     }, 1500);
   };
 
@@ -61,6 +75,12 @@ export default function DataUploadWizard() {
       setIsProcessing(false);
       setImportSuccess(true);
       toast.success('Dataset imported successfully — 14,832 rows ready for forecasting');
+      addNotification({
+        type: 'success',
+        title: 'Data Upload Complete',
+        message: `"${file?.name}" imported — 14,832 rows are now ready for forecasting.`,
+        href: '/data-management',
+      });
     }, 2000);
   };
 

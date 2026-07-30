@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Play, RefreshCw, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import Toggle from '@/components/ui/Toggle';
 import { toast } from 'sonner';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type FormValues = {
   runName: string;
@@ -57,6 +58,7 @@ export default function ForecastConfigForm() {
   const [weeklySeasonality, setWeeklySeasonality] = useState(true);
   const [dailySeasonality, setDailySeasonality] = useState(false);
   const [customSeasonality, setCustomSeasonality] = useState(false);
+  const { addNotification } = useNotifications();
 
   const {
     register,
@@ -95,7 +97,24 @@ export default function ForecastConfigForm() {
     // Backend integration point: POST /api/forecast-runs with model config payload
     setTimeout(() => {
       setIsRunning(false);
-      toast.success(`Forecast run "${data.runName || 'Untitled Run'}" queued — estimated completion: 2–3 minutes`);
+      const runName = data.runName || 'Untitled Run';
+      toast.success(`Forecast run "${runName}" queued — estimated completion: 2–3 minutes`);
+      addNotification({
+        type: 'info',
+        title: 'Forecast Run Queued',
+        message: `"${runName}" has been queued using ${models.find((m) => m.value === data.model)?.label ?? data.model}. Estimated completion: 2–3 minutes.`,
+        href: '/forecast-configuration',
+      });
+      // Simulate forecast completion after a delay
+      setTimeout(() => {
+        addNotification({
+          type: 'success',
+          title: 'Forecast Complete',
+          message: `"${runName}" finished successfully. View results in Forecast Analysis.`,
+          href: '/forecast-analysis',
+        });
+        toast.success(`Forecast "${runName}" completed — results ready in Forecast Analysis`);
+      }, 8000);
     }, 2500);
   };
 

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, RefreshCw, LogOut } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Bell, Sun, Moon, RefreshCw, LogOut, CheckCheck, Trash2, X, CheckCircle2, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useNotifications, AppNotification } from '@/contexts/NotificationContext';
 import { useRouter } from 'next/navigation';
 
 interface TopbarProps {
@@ -12,12 +13,46 @@ interface TopbarProps {
   lastUpdated?: string;
 }
 
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+function NotifIcon({ type }: { type: AppNotification['type'] }) {
+  const size = 14;
+  if (type === 'success') return <CheckCircle2 size={size} style={{ color: 'var(--positive)' }} />;
+  if (type === 'error') return <AlertCircle size={size} style={{ color: 'var(--negative)' }} />;
+  if (type === 'warning') return <AlertTriangle size={size} style={{ color: 'var(--warning)' }} />;
+  return <Info size={size} style={{ color: 'var(--primary)' }} />;
+}
+
 export default function Topbar({ title, subtitle, lastUpdated }: TopbarProps) {
   const { theme, toggleTheme } = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification, clearAll } = useNotifications();
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Close notification panel on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifPanel(false);
+      }
+    }
+    if (showNotifPanel) {
+      document.addEventListener('mousedown', handleClick);
+    }
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showNotifPanel]);
 
   const handleSignOut = async () => {
     try {
@@ -26,6 +61,14 @@ export default function Topbar({ title, subtitle, lastUpdated }: TopbarProps) {
       router.refresh();
     } catch (err) {
       console.error('Sign out error:', err);
+    }
+  };
+
+  const handleNotifClick = (n: AppNotification) => {
+    markAsRead(n.id);
+    if (n.href) {
+      router.push(n.href);
+      setShowNotifPanel(false);
     }
   };
 
@@ -66,14 +109,144 @@ export default function Topbar({ title, subtitle, lastUpdated }: TopbarProps) {
           </div>
         )}
 
-        {/* Notifications */}
-        <button className="relative btn-ghost h-9 w-9 p-0 justify-center">
-          <Bell size={18} />
-          <span
-            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-            style={{ background: 'var(--negative)' }}
-          />
-        </button>
+        {/* Notifications Bell */}
+        <div className="relative" ref={notifRef}>
+          <button
+            className="relative btn-ghost h-9 w-9 p-0 justify-center"
+            onClick={() => setShowNotifPanel((v) => !v)}
+            aria-label={`Notifications${unreadCount > 0 ? ` — ${unreadCount} unread` : ''}`}
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span
+                className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center text-white font-bold"
+                style={{ background: 'var(--negative)', fontSize: '10px', lineHeight: 1, padding: '0 3px' }}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifPanel && (
+            <div
+              className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-xl z-30 overflow-hidden flex flex-col"
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                maxHeight: '420px',
+              }}
+            >
+              {/* Panel header */}
+              <div
+                className="flex items-center justify-between px-4 py-3 shrink-0"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell size={14} style={{ color: 'var(--primary)' }} />
+                  <span className="text-sm font-semibold text-foreground">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span
+                      className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white"
+                      style={{ background: 'var(--negative)' }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="btn-ghost h-7 w-7 p-0 justify-center"
+                      title="Mark all as read"
+                    >
+                      <CheckCheck size={13} />
+                    </button>
+                  )}
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={clearAll}
+                      className="btn-ghost h-7 w-7 p-0 justify-center"
+                      title="Clear all"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowNotifPanel(false)}
+                    className="btn-ghost h-7 w-7 p-0 justify-center"
+                    title="Close"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Notification list */}
+              <div className="overflow-y-auto flex-1">
+                {notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                    <Bell size={28} style={{ color: 'var(--muted-foreground)' }} className="mb-2 opacity-40" />
+                    <p className="text-sm font-medium text-foreground">No notifications yet</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                      Events like forecast completions and uploads will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors"
+                      style={{
+                        background: n.read ? 'transparent' : 'color-mix(in srgb, var(--primary) 5%, transparent)',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.background = 'var(--muted)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.background = n.read
+                          ? 'transparent' :'color-mix(in srgb, var(--primary) 5%, transparent)';
+                      }}
+                      onClick={() => handleNotifClick(n)}
+                    >
+                      <div className="mt-0.5 shrink-0">
+                        <NotifIcon type={n.type} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p
+                            className="text-xs font-semibold leading-snug"
+                            style={{ color: n.read ? 'var(--muted-foreground)' : 'var(--foreground)' }}
+                          >
+                            {n.title}
+                          </p>
+                          <span className="text-xs shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+                            {timeAgo(n.timestamp)}
+                          </span>
+                        </div>
+                        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
+                          {n.message}
+                        </p>
+                      </div>
+                      <button
+                        className="shrink-0 btn-ghost h-5 w-5 p-0 justify-center opacity-0 group-hover:opacity-100"
+                        style={{ marginTop: '1px' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearNotification(n.id);
+                        }}
+                        title="Dismiss"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Theme toggle */}
         <button
