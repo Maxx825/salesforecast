@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, RefreshCw, LogOut, User } from 'lucide-react';
+import { Search, Bell, Sun, Moon, RefreshCw, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'next/navigation';
 
 interface TopbarProps {
@@ -12,7 +13,7 @@ interface TopbarProps {
 }
 
 export default function Topbar({ title, subtitle, lastUpdated }: TopbarProps) {
-  const [isDark] = useState(true);
+  const { theme, toggleTheme } = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, signOut } = useAuth();
@@ -75,8 +76,13 @@ export default function Topbar({ title, subtitle, lastUpdated }: TopbarProps) {
         </button>
 
         {/* Theme toggle */}
-        <button className="btn-ghost h-9 w-9 p-0 justify-center">
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        <button
+          className="btn-ghost h-9 w-9 p-0 justify-center"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle dark mode"
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
         {/* User menu */}

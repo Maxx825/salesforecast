@@ -8,14 +8,14 @@ const regions = ['All Regions', 'North America', 'EMEA', 'APAC', 'LATAM', 'India
 const channels = ['All Channels', 'Direct Sales', 'Partner Network', 'E-Commerce', 'Resellers'];
 const categories = ['All Categories', 'Enterprise Suite', 'SMB Plans', 'Add-ons', 'Professional Svcs', 'Training'];
 const periods = ['Monthly', 'Weekly', 'Quarterly'];
-const models = ['run-2026-041 (Prophet)', 'run-2026-040 (ARIMA)', 'run-2026-038 (Exp. Smooth)'];
+const models: string[] = [];
 
 export default function AnalysisFilterPanel() {
   const [region, setRegion] = useState('All Regions');
   const [channel, setChannel] = useState('All Channels');
   const [category, setCategory] = useState('All Categories');
   const [period, setPeriod] = useState('Monthly');
-  const [model, setModel] = useState('run-2026-041 (Prophet)');
+  const [model, setModel] = useState('');
   const [showCI, setShowCI] = useState(true);
   const [showActual, setShowActual] = useState(true);
   const [showSeasonality, setShowSeasonality] = useState(false);
@@ -26,7 +26,7 @@ export default function AnalysisFilterPanel() {
     setChannel('All Channels');
     setCategory('All Categories');
     setPeriod('Monthly');
-    setModel(models?.[0]);
+    setModel(models?.[0] ?? '');
     setShowCI(true);
     setShowActual(true);
     setShowSeasonality(false);
@@ -50,9 +50,13 @@ export default function AnalysisFilterPanel() {
         <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
           Forecast Run
         </label>
-        <select value={model} onChange={(e) => setModel(e?.target?.value)} className="input-field text-xs">
-          {models?.map((m) => <option key={`model-opt-${m}`} value={m}>{m}</option>)}
-        </select>
+        {models.length === 0 ? (
+          <p className="text-xs italic" style={{ color: 'var(--muted-foreground)' }}>No runs yet</p>
+        ) : (
+          <select value={model} onChange={(e) => setModel(e?.target?.value)} className="input-field text-xs">
+            {models?.map((m) => <option key={`model-opt-${m}`} value={m}>{m}</option>)}
+          </select>
+        )}
       </div>
       {/* Period */}
       <div>
