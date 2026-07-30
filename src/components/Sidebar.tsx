@@ -159,8 +159,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* User */}
         <div className={`flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg ${collapsed ? 'justify-center' : ''}`}
           style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '12px' }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold text-primary-foreground"
-            style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)' }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold text-white"
+            style={{ background: 'var(--primary)' }}>
             MR
           </div>
           {!collapsed && (

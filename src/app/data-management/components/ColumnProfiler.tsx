@@ -42,7 +42,7 @@ export default function ColumnProfiler({ datasetId }: { datasetId: string | null
             style={{
               background: selectedCol === col.id ? 'var(--info-bg)' : 'transparent',
               color: selectedCol === col.id ? 'var(--primary)' : 'var(--muted-foreground)',
-              border: `1px solid ${selectedCol === col.id ? 'rgba(108,99,255,0.2)' : 'transparent'}`,
+              border: `1px solid ${selectedCol === col.id ? 'rgba(59,111,212,0.2)' : 'transparent'}`,
             }}
           >
             <p className="font-mono font-semibold">{col.name}</p>

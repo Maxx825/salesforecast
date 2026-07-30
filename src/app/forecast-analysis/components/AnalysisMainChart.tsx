@@ -42,7 +42,7 @@ export default function AnalysisMainChart() {
           { color: 'var(--foreground)', label: 'Actual Revenue', type: 'solid' },
           { color: 'var(--primary)', label: 'Forecast (Prophet)', type: 'dashed' },
           { color: 'var(--accent)', label: 'Trend Component', type: 'solid' },
-          { color: 'rgba(108,99,255,0.25)', label: '80% CI Band', type: 'area' },
+          { color: 'rgba(59,111,212,0.2)', label: '80% CI Band', type: 'area' },
         ]?.map((item) => (
           <div key={`legend-a-${item?.label}`} className="flex items-center gap-2">
             {item?.type === 'area' ? (

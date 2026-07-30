@@ -162,7 +162,7 @@ export default function ForecastConfigForm() {
                   className="flex gap-3 p-4 rounded-xl cursor-pointer transition-all duration-150"
                   style={{
                     background: isSelected ? 'var(--info-bg)' : 'var(--secondary)',
-                    border: `1px solid ${isSelected ? 'rgba(108,99,255,0.4)' : 'var(--border)'}`,
+                    border: `1px solid ${isSelected ? 'rgba(59,111,212,0.4)' : 'var(--border)'}`,
                   }}
                 >
                   <input type="radio" value={m.value} {...register('model')} className="mt-0.5 accent-primary" />
