@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { DatasetProvider } from '@/contexts/DatasetContext';
 import '../styles/tailwind.css';
 
 const inter = Inter({
@@ -36,7 +37,9 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <NotificationProvider>
-              {children}
+              <DatasetProvider>
+                {children}
+              </DatasetProvider>
             </NotificationProvider>
           </ThemeProvider>
         </AuthProvider>

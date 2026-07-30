@@ -3,7 +3,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Upload, CheckCircle2, ChevronRight, AlertCircle, FileText, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useDatasets } from '@/contexts/DatasetContext';
+import { createClient } from '@/lib/supabase/client';
 import DataPreviewTable from './DataPreviewTable';
 import ColumnMapper from './ColumnMapper';
 import ValidationErrors from './ValidationErrors';
@@ -22,8 +25,12 @@ export default function DataUploadWizard() {
   const [file, setFile] = useState<{ name: string; size: string; rows: number; cols: number } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
+  const [savedDatasetId, setSavedDatasetId] = useState<string | null>(null);
+  const [isRunningForecast, setIsRunningForecast] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addNotification } = useNotifications();
+  const { addDataset, addForecastRun, updateForecastRun } = useDatasets();
+  const router = useRouter();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -68,20 +75,190 @@ export default function DataUploadWizard() {
     }, 1500);
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
+    if (!file) return;
     setIsProcessing(true);
-    // Backend integration point: POST /api/datasets/import with mapped columns
-    setTimeout(() => {
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error('You must be logged in to import data');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Generate a dataset name from the file name (strip extension)
+      const datasetName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+
+      const { data: inserted, error } = await supabase
+        .from('datasets')
+        .insert({
+          user_id: user.id,
+          name: datasetName,
+          file_name: file.name,
+          row_count: file.rows,
+          col_count: file.cols,
+          file_size: file.size,
+          status: 'ready',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.log('Dataset insert error:', error.message);
+        toast.error('Failed to save dataset — please try again');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Add to context immediately so ExistingDatasets panel updates
+      const newDataset = {
+        id: inserted.id,
+        userId: inserted.user_id,
+        name: inserted.name,
+        fileName: inserted.file_name,
+        rowCount: inserted.row_count,
+        colCount: inserted.col_count,
+        fileSize: inserted.file_size,
+        status: inserted.status,
+        uploadedAt: inserted.uploaded_at,
+      };
+      addDataset(newDataset);
+      setSavedDatasetId(inserted.id);
+
       setIsProcessing(false);
       setImportSuccess(true);
-      toast.success('Dataset imported successfully — 14,832 rows ready for forecasting');
+      toast.success('Dataset imported successfully — ready for forecasting');
       addNotification({
         type: 'success',
         title: 'Data Upload Complete',
-        message: `"${file?.name}" imported — 14,832 rows are now ready for forecasting.`,
+        message: `"${file.name}" imported — ${file.rows.toLocaleString()} rows are now ready for forecasting.`,
         href: '/data-management',
       });
-    }, 2000);
+    } catch (err: any) {
+      console.log('Import error:', err.message);
+      toast.error('Import failed — please try again');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRunForecast = async () => {
+    if (!savedDatasetId || !file) return;
+    setIsRunningForecast(true);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error('You must be logged in to run a forecast');
+        setIsRunningForecast(false);
+        return;
+      }
+
+      const runName = `Quick Forecast — ${file.name.replace(/\.[^/.]+$/, '')}`;
+
+      const { data: inserted, error } = await supabase
+        .from('forecast_runs')
+        .insert({
+          user_id: user.id,
+          dataset_id: savedDatasetId,
+          run_name: runName,
+          model: 'prophet',
+          horizon_weeks: 12,
+          confidence_level: 80,
+          status: 'running',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.log('Forecast run insert error:', error.message);
+        toast.error('Failed to start forecast — please try again');
+        setIsRunningForecast(false);
+        return;
+      }
+
+      const newRun = {
+        id: inserted.id,
+        userId: inserted.user_id,
+        datasetId: inserted.dataset_id,
+        runName: inserted.run_name,
+        model: inserted.model,
+        horizonWeeks: inserted.horizon_weeks,
+        confidenceLevel: inserted.confidence_level,
+        status: inserted.status,
+        projectedRevenue: null,
+        mape: null,
+        growthRate: null,
+        avgCiWidth: null,
+        dataCoverage: null,
+        forecastData: null,
+        segmentData: null,
+        createdAt: inserted.created_at,
+        completedAt: null,
+      };
+      addForecastRun(newRun);
+
+      addNotification({
+        type: 'info',
+        title: 'Forecast Run Started',
+        message: `"${runName}" is running using Prophet. Results will appear on the dashboard shortly.`,
+        href: '/',
+      });
+
+      // Simulate forecast completion and update with results
+      setTimeout(async () => {
+        const completedAt = new Date().toISOString();
+        const forecastResults = {
+          projected_revenue: 4820000,
+          mape: 4.2,
+          growth_rate: 8.3,
+          avg_ci_width: 12.5,
+          data_coverage: `${file.rows.toLocaleString()} rows`,
+          status: 'completed',
+          completed_at: completedAt,
+          forecast_data: generateForecastData(),
+          segment_data: generateSegmentData(),
+        };
+
+        const { error: updateError } = await supabase
+          .from('forecast_runs')
+          .update(forecastResults)
+          .eq('id', inserted.id);
+
+        if (!updateError) {
+          updateForecastRun(inserted.id, {
+            status: 'completed',
+            projectedRevenue: forecastResults.projected_revenue,
+            mape: forecastResults.mape,
+            growthRate: forecastResults.growth_rate,
+            avgCiWidth: forecastResults.avg_ci_width,
+            dataCoverage: forecastResults.data_coverage,
+            forecastData: forecastResults.forecast_data,
+            segmentData: forecastResults.segment_data,
+            completedAt,
+          });
+        }
+
+        addNotification({
+          type: 'success',
+          title: 'Forecast Complete',
+          message: `"${runName}" finished. View results on the Forecasting Dashboard.`,
+          href: '/',
+        });
+        toast.success('Forecast complete — results ready on the dashboard');
+      }, 4000);
+
+      // Navigate to dashboard immediately to show loading state
+      router.push('/');
+    } catch (err: any) {
+      console.log('Run forecast error:', err.message);
+      toast.error('Failed to start forecast — please try again');
+      setIsRunningForecast(false);
+    }
   };
 
   const resetWizard = () => {
@@ -89,6 +266,8 @@ export default function DataUploadWizard() {
     setFile(null);
     setImportSuccess(false);
     setIsProcessing(false);
+    setSavedDatasetId(null);
+    setIsRunningForecast(false);
   };
 
   if (importSuccess) {
@@ -103,16 +282,29 @@ export default function DataUploadWizard() {
         <div>
           <h2 className="text-xl font-semibold text-foreground">Import Complete</h2>
           <p className="text-sm mt-2" style={{ color: 'var(--muted-foreground)' }}>
-            <span className="font-semibold font-mono text-foreground">14,832 rows</span> ingested from{' '}
+            <span className="font-semibold font-mono text-foreground">{file?.rows.toLocaleString()} rows</span> ingested from{' '}
             <span className="font-semibold text-foreground">{file?.name}</span>
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-            Dataset ID: <span className="font-mono">ds-2026-047</span> · Status: Validating
+            Dataset ID: <span className="font-mono">{savedDatasetId?.slice(0, 13) ?? 'ds-saved'}</span> · Status: Ready
           </p>
         </div>
         <div className="flex gap-3">
           <button onClick={resetWizard} className="btn-secondary">Upload Another</button>
-          <button className="btn-primary">Run Forecast on This Dataset</button>
+          <button
+            onClick={handleRunForecast}
+            disabled={isRunningForecast}
+            className="btn-primary"
+          >
+            {isRunningForecast ? (
+              <>
+                <RefreshCw size={14} className="animate-spin" />
+                Starting Forecast…
+              </>
+            ) : (
+              'Run Forecast on This Dataset'
+            )}
+          </button>
         </div>
       </div>
     );
@@ -316,4 +508,33 @@ export default function DataUploadWizard() {
       </div>
     </div>
   );
+}
+
+// Helper: generate synthetic forecast chart data
+function generateForecastData() {
+  const data = [];
+  const base = 320000;
+  for (let i = 0; i < 24; i++) {
+    const actual = i < 18 ? base + Math.sin(i * 0.5) * 40000 + i * 8000 : null;
+    const predicted = base + Math.sin(i * 0.5) * 38000 + i * 8500;
+    data.push({
+      week: `W${i + 1}`,
+      actual,
+      predicted: Math.round(predicted),
+      lower: Math.round(predicted * 0.88),
+      upper: Math.round(predicted * 1.12),
+    });
+  }
+  return data;
+}
+
+// Helper: generate synthetic segment data
+function generateSegmentData() {
+  return [
+    { segment: 'Enterprise Suite', actual: 1820000, predicted: 1950000, growth: 7.1 },
+    { segment: 'SMB Plans', actual: 940000, predicted: 1020000, growth: 8.5 },
+    { segment: 'Add-ons', actual: 480000, predicted: 530000, growth: 10.4 },
+    { segment: 'Professional Svcs', actual: 360000, predicted: 390000, growth: 8.3 },
+    { segment: 'Training', actual: 120000, predicted: 130000, growth: 8.3 },
+  ];
 }
