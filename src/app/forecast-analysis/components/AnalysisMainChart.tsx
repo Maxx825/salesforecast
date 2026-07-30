@@ -10,7 +10,21 @@ const AnalysisChartInner = dynamic(
   { ssr: false, loading: () => <ChartSkeleton height="h-96" /> }
 );
 
-export default function AnalysisMainChart() {
+interface ForecastPoint {
+  week: string;
+  actual: number | null;
+  predicted: number;
+  lower: number;
+  upper: number;
+}
+
+interface Props {
+  data: ForecastPoint[];
+  runName?: string;
+  model?: string;
+}
+
+export default function AnalysisMainChart({ data, runName, model }: Props) {
   const [zoomed, setZoomed] = useState(false);
 
   return (
@@ -19,7 +33,7 @@ export default function AnalysisMainChart() {
         <div>
           <h2 className="text-base font-semibold text-foreground">Actual vs. Predicted — Full Detail View</h2>
           <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            Upload data and run a forecast to see the full detail view
+            {runName ? `${runName}${model ? ` · ${model}` : ''}` : 'Upload data and run a forecast to see the full detail view'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -40,9 +54,8 @@ export default function AnalysisMainChart() {
       <div className="flex flex-wrap items-center gap-5 mb-4 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
         {[
           { color: 'var(--foreground)', label: 'Actual Revenue', type: 'solid' },
-          { color: 'var(--primary)', label: 'Forecast (Prophet)', type: 'dashed' },
-          { color: 'var(--accent)', label: 'Trend Component', type: 'solid' },
-          { color: 'rgba(59,111,212,0.2)', label: '80% CI Band', type: 'area' },
+          { color: 'var(--primary)', label: `Forecast${model ? ` (${model})` : ''}`, type: 'dashed' },
+          { color: 'rgba(59,111,212,0.2)', label: 'CI Band', type: 'area' },
         ]?.map((item) => (
           <div key={`legend-a-${item?.label}`} className="flex items-center gap-2">
             {item?.type === 'area' ? (
@@ -62,7 +75,7 @@ export default function AnalysisMainChart() {
           </div>
         ))}
       </div>
-      <AnalysisChartInner />
+      <AnalysisChartInner data={data ?? []} />
     </div>
   );
 }

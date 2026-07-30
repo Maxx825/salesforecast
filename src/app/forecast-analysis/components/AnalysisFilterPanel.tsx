@@ -3,34 +3,32 @@
 import React, { useState } from 'react';
 import Toggle from '@/components/ui/Toggle';
 import { Filter, RotateCcw } from 'lucide-react';
+import { useDatasets } from '@/contexts/DatasetContext';
 
-const regions = ['All Regions', 'North America', 'EMEA', 'APAC', 'LATAM', 'India'];
-const channels = ['All Channels', 'Direct Sales', 'Partner Network', 'E-Commerce', 'Resellers'];
-const categories = ['All Categories', 'Enterprise Suite', 'SMB Plans', 'Add-ons', 'Professional Svcs', 'Training'];
 const periods = ['Monthly', 'Weekly', 'Quarterly'];
-const models: string[] = [];
 
-export default function AnalysisFilterPanel() {
-  const [region, setRegion] = useState('All Regions');
-  const [channel, setChannel] = useState('All Channels');
-  const [category, setCategory] = useState('All Categories');
+interface Props {
+  selectedRunId: string;
+  onSelectRun: (id: string) => void;
+}
+
+export default function AnalysisFilterPanel({ selectedRunId, onSelectRun }: Props) {
+  const { forecastRuns, isLoadingForecasts } = useDatasets();
+  const completedRuns = forecastRuns.filter((r) => r.status === 'completed');
+
   const [period, setPeriod] = useState('Monthly');
-  const [model, setModel] = useState('');
+  const [horizon, setHorizon] = useState(12);
   const [showCI, setShowCI] = useState(true);
   const [showActual, setShowActual] = useState(true);
   const [showSeasonality, setShowSeasonality] = useState(false);
-  const [horizon, setHorizon] = useState(12);
 
   const reset = () => {
-    setRegion('All Regions');
-    setChannel('All Channels');
-    setCategory('All Categories');
     setPeriod('Monthly');
-    setModel(models?.[0] ?? '');
+    setHorizon(12);
     setShowCI(true);
     setShowActual(true);
     setShowSeasonality(false);
-    setHorizon(12);
+    if (completedRuns.length > 0) onSelectRun(completedRuns[0].id);
   };
 
   return (
@@ -45,26 +43,36 @@ export default function AnalysisFilterPanel() {
           Reset
         </button>
       </div>
+
       {/* Forecast Run */}
       <div>
         <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
           Forecast Run
         </label>
-        {models.length === 0 ? (
+        {isLoadingForecasts ? (
+          <p className="text-xs italic" style={{ color: 'var(--muted-foreground)' }}>Loading…</p>
+        ) : completedRuns.length === 0 ? (
           <p className="text-xs italic" style={{ color: 'var(--muted-foreground)' }}>No runs yet</p>
         ) : (
-          <select value={model} onChange={(e) => setModel(e?.target?.value)} className="input-field text-xs">
-            {models?.map((m) => <option key={`model-opt-${m}`} value={m}>{m}</option>)}
+          <select
+            value={selectedRunId}
+            onChange={(e) => onSelectRun(e.target.value)}
+            className="input-field text-xs"
+          >
+            {completedRuns.map((r) => (
+              <option key={r.id} value={r.id}>{r.runName}</option>
+            ))}
           </select>
         )}
       </div>
+
       {/* Period */}
       <div>
         <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
           Granularity
         </label>
         <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--muted)' }}>
-          {periods?.map((p) => (
+          {periods.map((p) => (
             <button
               key={`period-${p}`}
               onClick={() => setPeriod(p)}
@@ -74,12 +82,13 @@ export default function AnalysisFilterPanel() {
                 color: period === p ? 'var(--foreground)' : 'var(--muted-foreground)',
               }}
             >
-              {p?.slice(0, 1)}
+              {p.slice(0, 1)}
             </button>
           ))}
         </div>
         <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>{period}</p>
       </div>
+
       {/* Horizon */}
       <div>
         <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
@@ -90,7 +99,7 @@ export default function AnalysisFilterPanel() {
           min={4}
           max={52}
           value={horizon}
-          onChange={(e) => setHorizon(Number(e?.target?.value))}
+          onChange={(e) => setHorizon(Number(e.target.value))}
           className="w-full accent-primary"
         />
         <div className="flex justify-between text-xs font-mono mt-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -99,33 +108,7 @@ export default function AnalysisFilterPanel() {
           <span>52 wks</span>
         </div>
       </div>
-      {/* Region */}
-      <div>
-        <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-          Region
-        </label>
-        <select value={region} onChange={(e) => setRegion(e?.target?.value)} className="input-field text-xs">
-          {regions?.map((r) => <option key={`region-opt-${r}`} value={r}>{r}</option>)}
-        </select>
-      </div>
-      {/* Channel */}
-      <div>
-        <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-          Sales Channel
-        </label>
-        <select value={channel} onChange={(e) => setChannel(e?.target?.value)} className="input-field text-xs">
-          {channels?.map((c) => <option key={`ch-opt-${c}`} value={c}>{c}</option>)}
-        </select>
-      </div>
-      {/* Category */}
-      <div>
-        <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-          Product Category
-        </label>
-        <select value={category} onChange={(e) => setCategory(e?.target?.value)} className="input-field text-xs">
-          {categories?.map((c) => <option key={`cat-opt-${c}`} value={c}>{c}</option>)}
-        </select>
-      </div>
+
       {/* Overlays */}
       <div className="space-y-3 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
         <p className="text-xs font-semibold uppercase tracking-wide pt-3" style={{ color: 'var(--muted-foreground)' }}>
