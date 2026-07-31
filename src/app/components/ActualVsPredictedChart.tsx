@@ -30,7 +30,7 @@ export default function ActualVsPredictedChart() {
               style={{
                 background: range === r ? 'var(--card)' : 'transparent',
                 color: range === r ? 'var(--foreground)' : 'var(--muted-foreground)',
-                boxShadow: range === r ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
+                boxShadow: range === r ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               {r}
@@ -50,7 +50,7 @@ export default function ActualVsPredictedChart() {
             <div
               className="w-6 h-0.5 rounded"
               style={{
-                background: item.opacity ? 'rgba(108,99,255,0.3)' : item.color,
+                background: item.opacity ? 'rgba(59,111,212,0.25)' : item.color,
                 borderTop: item.dashed ? '2px dashed' : 'none',
                 height: item.dashed ? '0' : '2px',
               }}

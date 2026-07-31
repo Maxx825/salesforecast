@@ -27,8 +27,8 @@ const templates = [
     pages: '12–18 pages',
     formats: ['PDF', 'CSV', 'XLSX'],
     lastGenerated: 'Jul 25, 2026',
-    color: 'var(--accent)',
-    bg: 'rgba(0,212,170,0.08)',
+    color: 'var(--positive)',
+    bg: 'var(--positive-bg)',
   },
   {
     id: 'tpl-accuracy',

@@ -1,45 +1,93 @@
 'use client';
 
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useMemo } from 'react';
+import { UploadCloud } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+} from 'recharts';
 
-// Backend integration point: replace with seasonality decomposition from Prophet
-const seasonality = [
-  { week: 'W1', effect: 0.12 },
-  { week: 'W2', effect: 0.08 },
-  { week: 'W3', effect: -0.04 },
-  { week: 'W4', effect: -0.11 },
-  { week: 'W5', effect: 0.18 },
-  { week: 'W6', effect: 0.22 },
-  { week: 'W7', effect: 0.09 },
-  { week: 'W8', effect: -0.06 },
-  { week: 'W9', effect: -0.14 },
-  { week: 'W10', effect: -0.08 },
-  { week: 'W11', effect: 0.14 },
-  { week: 'W12', effect: 0.31 },
-  { week: 'W13', effect: 0.26 },
-];
+interface ForecastPoint {
+  week: string;
+  predicted: number;
+}
 
-export default function SeasonalityChart() {
+interface Props {
+  data: ForecastPoint[];
+}
+
+export default function SeasonalityChart({ data }: Props) {
+  // Derive a seasonality component: deviation of predicted from its own moving average
+  const seasonality = React.useMemo(() => {
+    if (!data || data.length < 4) return [];
+    const window = 4;
+    return data.map((d, i) => {
+      const start = Math.max(0, i - Math.floor(window / 2));
+      const end = Math.min(data.length, start + window);
+      const avg = data.slice(start, end).reduce((s, x) => s + x.predicted, 0) / (end - start);
+      return {
+        week: d.week,
+        seasonality: Math.round(d.predicted - avg),
+      };
+    });
+  }, [data]);
+
+  if (seasonality.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[180px] text-center">
+        <UploadCloud size={28} style={{ color: 'var(--muted-foreground)' }} className="mb-2 opacity-40" />
+        <p className="text-xs font-medium text-foreground mb-1">No seasonality data</p>
+        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+          No data yet — upload a file to get started
+        </p>
+      </div>
+    );
+  }
+
+  const formatK = (v: number) => {
+    if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+    return `${v}`;
+  };
+
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <LineChart data={seasonality} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="week" tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }} axisLine={false} tickLine={false} />
-        <YAxis
-          tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
-          tick={{ fontSize: 9, fill: 'var(--muted-foreground)', fontFamily: 'var(--font-mono)' }}
-          axisLine={false}
-          tickLine={false}
-          width={40}
-        />
-        <Tooltip
-          formatter={(v: number) => [`${(v * 100).toFixed(1)}%`, 'Seasonal Effect']}
-          contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 11 }}
-          labelStyle={{ color: 'var(--foreground)' }}
-        />
-        <Line dataKey="effect" stroke="var(--accent)" strokeWidth={2} dot={{ fill: 'var(--accent)', r: 3 }} type="monotone" />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="h-[180px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={seasonality} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+          <XAxis
+            dataKey="week"
+            tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+            axisLine={false}
+            tickLine={false}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            tickFormatter={formatK}
+            tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+            axisLine={false}
+            tickLine={false}
+            width={48}
+          />
+          <Tooltip
+            formatter={(v: number) => [`$${formatK(v)}`, 'Seasonal Effect']}
+            contentStyle={{ fontSize: 11 }}
+          />
+          <ReferenceLine y={0} stroke="var(--muted-foreground)" strokeDasharray="3 2" />
+          <Line
+            type="monotone"
+            dataKey="seasonality"
+            stroke="var(--accent)"
+            strokeWidth={2}
+            dot={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

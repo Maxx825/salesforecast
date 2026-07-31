@@ -2,34 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0F0E17;
-  --foreground: #E8E6F0;
-  --primary: #6C63FF;
+:root,
+[data-theme="light"] {
+  --background: #F8F9FA;
+  --foreground: #1A1D23;
+  --primary: #3B6FD4;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E1D2E;
-  --secondary-foreground: #C4C2D4;
-  --accent: #00D4AA;
-  --accent-foreground: #0F0E17;
-  --muted: #2A2840;
-  --muted-foreground: #8884A0;
-  --card: #17162A;
-  --card-foreground: #E8E6F0;
-  --border: #2E2C45;
-  --input: #1E1D2E;
-  --ring: #6C63FF;
-  --radius: 10px;
-  --font-sans: 'DM Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --secondary: #F1F3F5;
+  --secondary-foreground: #4A5568;
+  --accent: #3B6FD4;
+  --accent-foreground: #FFFFFF;
+  --muted: #EDF0F3;
+  --muted-foreground: #6B7280;
+  --card: #FFFFFF;
+  --card-foreground: #1A1D23;
+  --border: #E2E6EA;
+  --input: #FFFFFF;
+  --ring: #3B6FD4;
+  --radius: 8px;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', monospace;
 
-  --positive: #00D4AA;
-  --positive-bg: rgba(0, 212, 170, 0.08);
-  --negative: #EF4444;
-  --negative-bg: rgba(239, 68, 68, 0.08);
-  --warning: #F59E0B;
-  --warning-bg: rgba(245, 158, 11, 0.08);
-  --info: #6C63FF;
-  --info-bg: rgba(108, 99, 255, 0.08);
+  --positive: #16A34A;
+  --positive-bg: #F0FDF4;
+  --negative: #DC2626;
+  --negative-bg: #FEF2F2;
+  --warning: #D97706;
+  --warning-bg: #FFFBEB;
+  --info: #3B6FD4;
+  --info-bg: #EFF4FF;
+}
+
+[data-theme="dark"] {
+  --background: #0F1117;
+  --foreground: #E8EAF0;
+  --primary: #5B8FE8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E2130;
+  --secondary-foreground: #A0AABF;
+  --accent: #5B8FE8;
+  --accent-foreground: #FFFFFF;
+  --muted: #1A1E2E;
+  --muted-foreground: #7A8499;
+  --card: #161B2C;
+  --card-foreground: #E8EAF0;
+  --border: #2A3050;
+  --input: #1E2130;
+  --ring: #5B8FE8;
+  --radius: 8px;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', monospace;
+
+  --positive: #22C55E;
+  --positive-bg: #052E16;
+  --negative: #F87171;
+  --negative-bg: #2D0A0A;
+  --warning: #FBBF24;
+  --warning-bg: #2D1A00;
+  --info: #5B8FE8;
+  --info-bg: #0D1A3A;
 }
 
 @layer base {
@@ -71,33 +102,32 @@
   }
 
   .text-gradient-primary {
-    background: linear-gradient(135deg, #6C63FF 0%, #00D4AA 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary);
   }
 
   .card-elevated {
     background-color: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
 
   .card-elevated-hover {
     background-color: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: border-color 200ms ease, box-shadow 200ms ease;
   }
 
   .card-elevated-hover:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 1px rgba(108, 99, 255, 0.15), 0 4px 24px rgba(108, 99, 255, 0.08);
+    border-color: #A8BFEA;
+    box-shadow: 0 2px 8px rgba(59, 111, 212, 0.08);
   }
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--muted) transparent;
+    scrollbar-color: var(--border) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -110,7 +140,7 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: var(--muted);
+    background-color: var(--border);
     border-radius: 2px;
   }
 
@@ -163,7 +193,7 @@
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 disabled:opacity-50;
     background-color: var(--negative-bg);
     color: var(--negative);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.2);
   }
 
   .btn-danger:hover {
@@ -179,7 +209,7 @@
 
   .input-field:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(59, 111, 212, 0.1);
   }
 
   .input-field.error {
@@ -229,7 +259,7 @@
   .nav-item.active {
     background-color: var(--info-bg);
     color: var(--primary);
-    border: 1px solid rgba(108, 99, 255, 0.2);
+    border: 1px solid rgba(59, 111, 212, 0.2);
   }
 
   .tooltip-wrapper {
@@ -238,8 +268,8 @@
 
   .tooltip-label {
     @apply absolute left-full ml-2 px-2 py-1 rounded text-xs font-medium whitespace-nowrap pointer-events-none opacity-0 transition-opacity duration-150 z-50;
-    background-color: var(--muted);
-    color: var(--foreground);
+    background-color: var(--foreground);
+    color: var(--card);
   }
 
   .tooltip-wrapper:hover .tooltip-label {
@@ -258,7 +288,7 @@
 }
 
 @keyframes pulseHighlight {
-  0% { background-color: rgba(108, 99, 255, 0.15); }
+  0% { background-color: rgba(59, 111, 212, 0.1); }
   100% { background-color: transparent; }
 }
 

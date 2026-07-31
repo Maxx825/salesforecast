@@ -29,17 +29,17 @@ export default function MetricCard({
       case 'positive': return 'var(--positive-bg)';
       case 'negative': return 'var(--negative-bg)';
       case 'warning': return 'var(--warning-bg)';
-      case 'hero': return 'linear-gradient(135deg, rgba(108,99,255,0.12) 0%, rgba(0,212,170,0.06) 100%)';
+      case 'hero': return 'var(--info-bg)';
       default: return 'var(--card)';
     }
   };
 
   const getBorderColor = () => {
     switch (variant) {
-      case 'positive': return 'rgba(0, 212, 170, 0.25)';
-      case 'negative': return 'rgba(239, 68, 68, 0.25)';
-      case 'warning': return 'rgba(245, 158, 11, 0.25)';
-      case 'hero': return 'rgba(108, 99, 255, 0.3)';
+      case 'positive': return 'rgba(22, 163, 74, 0.2)';
+      case 'negative': return 'rgba(220, 38, 38, 0.2)';
+      case 'warning': return 'rgba(217, 119, 6, 0.2)';
+      case 'hero': return 'rgba(59, 111, 212, 0.25)';
       default: return 'var(--border)';
     }
   };
@@ -63,6 +63,7 @@ export default function MetricCard({
       style={{
         background: getBg(),
         border: `1px solid ${getBorderColor()}`,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
       }}
     >
       <div className="flex items-start justify-between">

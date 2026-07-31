@@ -22,19 +22,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Backend integration point: replace with GET /api/datasets with pagination + filters
-const allDatasets = [
-  { id: 'ds-2026-046', name: 'Q2 2026 Actuals', source: 'CSV Upload', rows: 12840, cols: 12, dateRange: 'Apr 1 – Jun 30, 2026', uploadedBy: 'Priya Sharma', uploadedAt: 'Jul 14, 2026', status: 'active', quality: 98, missing: 0.1, usedInRuns: 3 },
-  { id: 'ds-2026-044', name: 'Q1 2026 Actuals', source: 'CSV Upload', rows: 11920, cols: 12, dateRange: 'Jan 1 – Mar 31, 2026', uploadedBy: 'Marcus Rivera', uploadedAt: 'Apr 8, 2026', status: 'active', quality: 96, missing: 0.3, usedInRuns: 5 },
-  { id: 'ds-2025-038', name: 'FY 2025 Full Year', source: 'XLSX Upload', rows: 48310, cols: 12, dateRange: 'Jan 1 – Dec 31, 2025', uploadedBy: 'Keiko Tanaka', uploadedAt: 'Jan 12, 2026', status: 'active', quality: 99, missing: 0.0, usedInRuns: 12 },
-  { id: 'ds-2025-031', name: 'H2 2025 Actuals', source: 'CSV Upload', rows: 24180, cols: 12, dateRange: 'Jul 1 – Dec 31, 2025', uploadedBy: 'Marcus Rivera', uploadedAt: 'Jan 5, 2026', status: 'active', quality: 97, missing: 0.2, usedInRuns: 8 },
-  { id: 'ds-2025-021', name: 'H1 2025 Actuals', source: 'CSV Upload', rows: 23140, cols: 12, dateRange: 'Jan 1 – Jun 30, 2025', uploadedBy: 'Marcus Rivera', uploadedAt: 'Jul 7, 2025', status: 'stale', quality: 94, missing: 0.6, usedInRuns: 4 },
-  { id: 'ds-2025-014', name: 'Q1 2025 Pilot Data', source: 'Manual Entry', rows: 4820, cols: 10, dateRange: 'Jan 1 – Mar 31, 2025', uploadedBy: 'Lena Hoffmann', uploadedAt: 'Apr 2, 2025', status: 'stale', quality: 88, missing: 2.1, usedInRuns: 2 },
-  { id: 'ds-2024-009', name: 'FY 2024 Archive', source: 'XLSX Upload', rows: 45880, cols: 12, dateRange: 'Jan 1 – Dec 31, 2024', uploadedBy: 'Lena Hoffmann', uploadedAt: 'Jan 8, 2025', status: 'neutral', quality: 91, missing: 0.8, usedInRuns: 7 },
-  { id: 'ds-2024-003', name: 'H1 2024 Archive', source: 'CSV Upload', rows: 22340, cols: 11, dateRange: 'Jan 1 – Jun 30, 2024', uploadedBy: 'Priya Sharma', uploadedAt: 'Jul 3, 2024', status: 'neutral', quality: 89, missing: 1.2, usedInRuns: 3 },
-  { id: 'ds-2023-001', name: 'FY 2023 Historical', source: 'CSV Upload', rows: 41200, cols: 11, dateRange: 'Jan 1 – Dec 31, 2023', uploadedBy: 'Marcus Rivera', uploadedAt: 'Jan 15, 2024', status: 'neutral', quality: 85, missing: 1.8, usedInRuns: 6 },
-  { id: 'ds-err-047', name: 'Q3 2026 Draft (failed)', source: 'CSV Upload', rows: 0, cols: 0, dateRange: '—', uploadedBy: 'Priya Sharma', uploadedAt: 'Jul 28, 2026', status: 'error', quality: 0, missing: 100, usedInRuns: 0 },
-];
+const allDatasets: Array<{
+  id: string; name: string; source: string; rows: number; cols: number;
+  dateRange: string; uploadedBy: string; uploadedAt: string; status: string;
+  quality: number; missing: number; usedInRuns: number;
+}> = [];
 
 const PAGE_SIZE = 8;
 
@@ -68,7 +60,7 @@ export default function DatasetTable() {
     return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
   });
 
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const toggleSelect = (id: string) => {
@@ -85,7 +77,6 @@ export default function DatasetTable() {
 
   const handleDelete = () => {
     setDeleteModal(null);
-    // Backend integration point: DELETE /api/datasets/:id
     toast.success('Dataset deleted — associated forecast runs remain intact');
   };
 
@@ -144,7 +135,7 @@ export default function DatasetTable() {
       {/* Bulk action bar */}
       {selected.length > 0 && (
         <div
-          className="flex items-center justify-between px-4 py-2.5 rounded-lg animate-slide-up"
+          className="flex items-center justify-between px-4 py-2.5 rounded-lg"
           style={{ background: 'var(--info-bg)', border: '1px solid rgba(108,99,255,0.25)' }}
         >
           <span className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>
@@ -203,8 +194,8 @@ export default function DatasetTable() {
                   <td colSpan={12}>
                     <EmptyState
                       icon={<Database size={28} />}
-                      title="No datasets found"
-                      description="No datasets match your current filters. Try adjusting the search or status filter."
+                      title="No datasets yet"
+                      description="No data yet — upload a file to get started"
                     />
                   </td>
                 </tr>
@@ -328,7 +319,7 @@ export default function DatasetTable() {
           style={{ borderTop: '1px solid var(--border)' }}
         >
           <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            Showing {Math.min((page - 1) * PAGE_SIZE + 1, sorted.length)}–{Math.min(page * PAGE_SIZE, sorted.length)} of{' '}
+            Showing {sorted.length === 0 ? 0 : Math.min((page - 1) * PAGE_SIZE + 1, sorted.length)}–{Math.min(page * PAGE_SIZE, sorted.length)} of{' '}
             <span className="font-semibold text-foreground">{sorted.length}</span> datasets
           </p>
           <div className="flex items-center gap-1">

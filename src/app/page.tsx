@@ -10,8 +10,7 @@ export default function ForecastingDashboardPage() {
   return (
     <AppLayout
       title="Forecasting Dashboard"
-      subtitle="Q3 2026 · Prophet Model · 12-week horizon"
-      lastUpdated="2 min ago"
+      subtitle="Upload your sales data to generate forecasts"
     >
       <div className="space-y-6">
         <MetricsBentoGrid />

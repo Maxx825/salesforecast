@@ -1,22 +1,47 @@
+'use client';
+
 import React from 'react';
 import MetricCard from '@/components/ui/MetricCard';
 import { DollarSign, Activity, Percent, BarChart2, Database } from 'lucide-react';
+import { useDatasets } from '@/contexts/DatasetContext';
 
-// Bento plan: 5 cards → grid-cols-4 → row 1: hero spans 2 cols + 2 regular, row 2: 3 regular spanning full
-// Actually: 1 hero (col-span-2) + 4 regular = 6 slots in 4-col grid → row1: hero(2) + 2 regular, row2: 2 regular + 1 spanning 2 = clean
-// Final: hero col-span-2, 4 singles → 2 rows of 4 cols total
+const EMPTY_VALUE = '—';
+const EMPTY_SUB = 'No data yet — upload a file to get started';
 
 export default function MetricsBentoGrid() {
+  const { latestForecast, isLoadingForecasts } = useDatasets();
+
+  const fmt = (n: number | null | undefined, prefix = '') =>
+    n != null ? `${prefix}${n.toLocaleString()}` : EMPTY_VALUE;
+
+  const projectedRevenue = latestForecast?.projectedRevenue != null
+    ? `$${(latestForecast.projectedRevenue / 1_000_000).toFixed(2)}M`
+    : EMPTY_VALUE;
+
+  const mape = latestForecast?.mape != null
+    ? `${latestForecast.mape.toFixed(1)}%`
+    : EMPTY_VALUE;
+
+  const growthRate = latestForecast?.growthRate != null
+    ? `+${latestForecast.growthRate.toFixed(1)}%`
+    : EMPTY_VALUE;
+
+  const avgCiWidth = latestForecast?.avgCiWidth != null
+    ? `±${latestForecast.avgCiWidth.toFixed(1)}%`
+    : EMPTY_VALUE;
+
+  const dataCoverage = latestForecast?.dataCoverage ?? EMPTY_VALUE;
+
+  const subValue = isLoadingForecasts ? 'Loading…' : EMPTY_SUB;
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
       {/* Hero — Projected Revenue */}
       <div className="col-span-2">
         <MetricCard
           label="Projected Revenue — Next 12 Weeks"
-          value="₹4,827,340"
-          subValue="Q3 2026 · Prophet model · 87% confidence"
-          trend={11.4}
-          trendLabel="vs. Q3 2025 actual"
+          value={projectedRevenue}
+          subValue={latestForecast ? `Based on ${latestForecast.runName}` : subValue}
           variant="hero"
           icon={<DollarSign size={16} style={{ color: 'var(--primary)' }} />}
           className="h-full"
@@ -26,42 +51,35 @@ export default function MetricsBentoGrid() {
       {/* MAPE */}
       <MetricCard
         label="Forecast Accuracy (MAPE)"
-        value="6.2%"
-        subValue="Last 8-week backtest"
-        trend={-1.3}
-        trendLabel="vs. previous run"
-        variant="positive"
-        icon={<Activity size={16} style={{ color: 'var(--positive)' }} />}
+        value={mape}
+        subValue={latestForecast ? 'Lower is better' : subValue}
+        variant="default"
+        icon={<Activity size={16} style={{ color: 'var(--muted-foreground)' }} />}
       />
 
       {/* Growth Rate */}
       <MetricCard
         label="MoM Growth Rate"
-        value="+8.7%"
-        subValue="Jul → Aug 2026"
-        trend={8.7}
-        trendLabel="month-over-month"
-        variant="positive"
-        icon={<Percent size={16} style={{ color: 'var(--positive)' }} />}
+        value={growthRate}
+        subValue={latestForecast ? 'Month-over-month' : subValue}
+        variant="default"
+        icon={<Percent size={16} style={{ color: 'var(--muted-foreground)' }} />}
       />
 
       {/* Confidence Interval Width */}
       <MetricCard
         label="Avg. CI Width"
-        value="±14.3%"
-        subValue="Upper–lower band spread"
-        variant="warning"
-        alert="Wider than target ±10% — high volatility in APAC segment"
-        icon={<BarChart2 size={16} style={{ color: 'var(--warning)' }} />}
+        value={avgCiWidth}
+        subValue={latestForecast ? '80% confidence interval' : subValue}
+        variant="default"
+        icon={<BarChart2 size={16} style={{ color: 'var(--muted-foreground)' }} />}
       />
 
       {/* Data Coverage */}
       <MetricCard
         label="Data Coverage"
-        value="91.4%"
-        subValue="274 of 300 SKUs have ≥24 months data"
-        trend={2.1}
-        trendLabel="vs. last import"
+        value={dataCoverage}
+        subValue={latestForecast ? 'Rows in training set' : subValue}
         variant="default"
         icon={<Database size={16} style={{ color: 'var(--muted-foreground)' }} />}
       />
