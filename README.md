@@ -118,7 +118,7 @@ npm run dev
 Visit:
 
 ```text
-http://localhost:4028
+[http://localhost:4028](http://localhost:4028)
 ```
 
 ---
