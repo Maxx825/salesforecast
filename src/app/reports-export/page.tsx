@@ -3,6 +3,7 @@ import AppLayout from '@/components/AppLayout';
 import ReportTemplates from './components/ReportTemplates';
 import ExportHistoryTable from './components/ExportHistoryTable';
 import ScheduledExports from './components/ScheduledExports';
+import DownloadExport from './components/DownloadExport';
 
 export default function ReportsExportPage() {
   return (
@@ -11,6 +12,7 @@ export default function ReportsExportPage() {
       subtitle="Generate, schedule, and download forecast reports"
     >
       <div className="space-y-6">
+        <DownloadExport />
         <ReportTemplates />
         <div className="grid grid-cols-1 xl:grid-cols-3 2xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
