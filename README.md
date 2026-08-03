@@ -8,7 +8,7 @@ An sales forecasting platform that helps businesses predict future sales trends 
 
 🚀 **Explore the application here:**
 
-**[https://salesforecast-0jbd654.public.builtwithrocket.new/](https://salesforecast-0jbd654.public.builtwithrocket.new)**
+**[[https://salesforecast-0jbd654.public.builtwithrocket.new/](https://salesforecast-0jbd654.public.builtwithrocket.new)](https://salesforecast-0jbd654.public.builtwithrocket.new)**
 
 ---
 
