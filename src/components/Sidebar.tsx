@@ -4,20 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import {
-  LayoutDashboard,
-  Upload,
-  TrendingUp,
-  Settings2,
-  FileBarChart,
-  Database,
-  ChevronLeft,
-  ChevronRight,
-  HelpCircle,
-  LogOut,
-  Users,
-  UserCog,
-} from 'lucide-react';
+import { LayoutDashboard, Upload, TrendingUp, Settings2, FileBarChart, Database, ChevronLeft, ChevronRight, HelpCircle, Users, UserCog,  } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
 
 
@@ -124,26 +111,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </Link>
           </>
         )}
-
-        {/* User */}
-        <div className={`flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg ${collapsed ? 'justify-center' : ''}`}
-          style={{ borderTop: '1px solid var(--border)', marginTop: '8px', paddingTop: '12px' }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-semibold text-white"
-            style={{ background: 'var(--primary)' }}>
-            MR
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">Manas Verma</p>
-              <p className="text-xs text-muted-foreground truncate">Sales Ops Manager</p>
-            </div>
-          )}
-          {!collapsed && (
-            <button className="text-muted-foreground hover:text-foreground transition-colors">
-              <LogOut size={16} />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Collapse Toggle */}

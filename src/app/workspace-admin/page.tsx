@@ -41,10 +41,9 @@ interface DataPermission {
 
 const initialMembers: TeamMember[] = [
   { id: 'm1', name: 'Manas Verma', email: 'manas@company.com', role: 'Admin', status: 'active', joinedAt: 'Jan 2026', avatar: 'MV' },
-  { id: 'm2', name: 'Priya Sharma', email: 'priya@company.com', role: 'Editor', status: 'active', joinedAt: 'Mar 2026', avatar: 'PS' },
-  { id: 'm3', name: 'Arjun Mehta', email: 'arjun@company.com', role: 'Viewer', status: 'active', joinedAt: 'Apr 2026', avatar: 'AM' },
-  { id: 'm4', name: 'Sneha Patel', email: 'sneha@company.com', role: 'Editor', status: 'pending', joinedAt: '—', avatar: 'SP' },
-  { id: 'm5', name: 'Rohan Das', email: 'rohan@company.com', role: 'Viewer', status: 'active', joinedAt: 'May 2026', avatar: 'RD' },
+  { id: 'm2', name: 'Krishna', email: 'krishna@company.com', role: 'Editor', status: 'active', joinedAt: 'Mar 2026', avatar: 'KR' },
+  { id: 'm3', name: 'Hetaksh Pandey', email: 'hetaksh@company.com', role: 'Editor', status: 'active', joinedAt: 'Apr 2026', avatar: 'HP' },
+  { id: 'm4', name: 'Sneha Patel', email: 'sneha@company.com', role: 'Editor', status: 'active', joinedAt: 'May 2026', avatar: 'SP' },
 ];
 
 const dataPermissions: DataPermission[] = [
@@ -130,7 +129,7 @@ export default function WorkspaceAdminPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Total Members', value: members.filter((m) => m.status === 'active').length, sub: 'active' },
+            { label: 'Total Members', value: members.length, sub: 'active' },
             { label: 'Pending Invites', value: members.filter((m) => m.status === 'pending').length, sub: 'awaiting acceptance' },
             { label: 'Admins', value: members.filter((m) => m.role === 'Admin').length, sub: 'full access' },
           ].map((stat) => (
